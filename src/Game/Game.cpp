@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "Base/Util/Constants.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_init.h>
@@ -7,7 +8,9 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <cstdio>
 
-Game::~Game() { DeInit(); }
+Game::~Game() {
+    DeInit();
+}
 
 Error Game::Init() {
     // Initialize settings from config file
@@ -87,7 +90,7 @@ void Game::Run() {
 
     while (m_isRunning) {
         uint64_t currentTime = SDL_GetTicksNS();
-        float deltaTime = static_cast<float>((currentTime - lastTime) / 1'000'000'000.0);
+        float deltaTime = static_cast<float>((currentTime - lastTime) / static_cast<double>(Constants::NANO_PER_SEC));
         lastTime = currentTime;
 
         HandleEvent();
@@ -96,17 +99,17 @@ void Game::Run() {
 
         // Frame rate control
         uint64_t frameTime = SDL_GetTicksNS() - currentTime;
-        if (frameTime < Settings::FrameDelay * 1'000'000) {
-            SDL_Delay(static_cast<Uint32>((Settings::FrameDelay * 1'000'000 - frameTime) / 1'000'000));
+        if (frameTime < Settings::FrameDelay * Constants::NANO_PER_MILLI) {
+            SDL_Delay(static_cast<Uint32>((Settings::FrameDelay * Constants::NANO_PER_MILLI - frameTime) / Constants::NANO_PER_MILLI));
         }
 
         // FPS calculation
         m_frameCount++;
         uint64_t elapsed = SDL_GetTicksNS() - m_fpsTimer;
         if (elapsed > 0) {
-            m_fps = static_cast<int>(m_frameCount * 1'000'000'000.0 / elapsed + 0.5);
+            m_fps = static_cast<int>(m_frameCount * static_cast<double>(Constants::NANO_PER_SEC) / elapsed + 0.5);
         }
-        if (elapsed >= 1'000'000'000) {
+        if (elapsed >= Constants::NANO_PER_SEC) {
             m_frameCount = 0;
             m_fpsTimer = SDL_GetTicksNS();
         }

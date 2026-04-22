@@ -8,8 +8,6 @@
 
 #include "Scene.hpp"
 #include <SDL3/SDL.h>
-#include <SDL3_ttf/SDL_ttf.h>
-#include <memory>
 
 class Game;
 
@@ -19,30 +17,26 @@ public:
     ~SceneDemo() override;
 
 public:
-    // Initialize
     Error Init() override;
     Error DeInit() override;
-
-    // Update logic
     void Update(float deltaTime) override;
-
-    // Render
     void Render() override;
-
-    // Handle input
     void HandleEvent(SDL_Event& event) override;
 
 private:
     Game& m_game;
-    TTF_Font* m_font;
     bool m_initialized;
 
-    // Demo state - moving square
+    // Bouncing square
     float m_squareX;
     float m_squareY;
     float m_squareSpeed;
     int m_directionX;
     int m_directionY;
+
+    // Cube rotation
+    float m_rotation;
+    float m_time;
 };
 
 #endif
