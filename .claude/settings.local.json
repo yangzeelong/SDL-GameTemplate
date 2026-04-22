@@ -12,7 +12,10 @@
       "Bash(cmake --build build)",
       "Bash(ls:*)",
       "Bash(timeout 3 ./SDL-GameTemplate.exe)",
-      "Bash(gh run:*)"
+      "Bash(gh run:*)",
+      "Bash(rm -rf third_party)",
+      "Bash(mkdir -p third_party/glm-1.0.1/include)",
+      "Bash(cp -r D:/Library/glm-1.0.1/include/glm third_party/glm-1.0.1/include/)"
     ]
   }
 }

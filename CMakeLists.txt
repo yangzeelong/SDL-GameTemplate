@@ -33,6 +33,7 @@ add_executable(SDL-GameTemplate ${SRC_FILES})
 target_include_directories(SDL-GameTemplate PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/Base
+    ${CMAKE_SOURCE_DIR}/third_party/glm-1.0.1
     ${SDL3_INCLUDE_DIR}
     ${SDL3_INCLUDE_DIRS}
 )
