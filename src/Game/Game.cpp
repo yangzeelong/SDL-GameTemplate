@@ -1,15 +1,18 @@
 #include "Game.hpp"
-#include "Config.hpp"
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_init.h>
-#include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_log.h>
+#include <SDL3/SDL_timer.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <cstdio>
 
-Game::~Game() {
-    DeInit();
-}
+Game::~Game() { DeInit(); }
 
 Error Game::Init() {
+    // Initialize settings from config file
+    Settings::Init();
+
     // Initialize SDL video subsystem
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init failed");
@@ -17,11 +20,7 @@ Error Game::Init() {
     }
 
     // Create window
-    m_window = SDL_CreateWindow(
-        kWindowTitle,
-        kWindowWidth,
-        kWindowHeight,
-        0);
+    m_window = SDL_CreateWindow(Settings::WindowTitle, Settings::WindowWidth, Settings::WindowHeight, 0);
     if (!m_window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateWindow failed");
         return Error::ERROR_INIT;
@@ -34,6 +33,21 @@ Error Game::Init() {
         return Error::ERROR_INIT;
     }
 
+    // Initialize TTF for FPS display
+    if (!TTF_WasInit() && !TTF_Init()) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "TTF_Init failed");
+        return Error::ERROR_INIT;
+    }
+
+    // Load FPS font
+    if (Settings::ShowFPS) {
+        m_fpsFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 16);
+        if (!m_fpsFont) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "TTF_OpenFont failed: %s", SDL_GetError());
+            return Error::ERROR_INIT;
+        }
+    }
+
     m_isRunning = true;
     return Error::SUCCESS;
 }
@@ -41,6 +55,12 @@ Error Game::Init() {
 Error Game::DeInit() {
     // Release current scene
     m_currentScene.reset();
+
+    // Release FPS font
+    if (m_fpsFont) {
+        TTF_CloseFont(m_fpsFont);
+        m_fpsFont = nullptr;
+    }
 
     // Destroy renderer
     if (m_renderer) {
@@ -60,11 +80,14 @@ Error Game::DeInit() {
 }
 
 void Game::Run() {
-    uint32_t lastTime = SDL_GetTicks();
+    uint64_t lastTime = SDL_GetTicksNS();
+    m_fpsTimer = SDL_GetTicksNS();
+    m_frameCount = 0;
+    m_fps = 0;
 
     while (m_isRunning) {
-        uint32_t currentTime = SDL_GetTicks();
-        float deltaTime = (currentTime - lastTime) / 1000.0f;
+        uint64_t currentTime = SDL_GetTicksNS();
+        float deltaTime = static_cast<float>((currentTime - lastTime) / 1'000'000'000.0);
         lastTime = currentTime;
 
         HandleEvent();
@@ -72,9 +95,20 @@ void Game::Run() {
         Render();
 
         // Frame rate control
-        uint32_t frameTime = SDL_GetTicks() - currentTime;
-        if (frameTime < kFrameDelay) {
-            SDL_Delay(static_cast<Uint32>(kFrameDelay - frameTime));
+        uint64_t frameTime = SDL_GetTicksNS() - currentTime;
+        if (frameTime < Settings::FrameDelay * 1'000'000) {
+            SDL_Delay(static_cast<Uint32>((Settings::FrameDelay * 1'000'000 - frameTime) / 1'000'000));
+        }
+
+        // FPS calculation
+        m_frameCount++;
+        uint64_t elapsed = SDL_GetTicksNS() - m_fpsTimer;
+        if (elapsed > 0) {
+            m_fps = static_cast<int>(m_frameCount * 1'000'000'000.0 / elapsed + 0.5);
+        }
+        if (elapsed >= 1'000'000'000) {
+            m_frameCount = 0;
+            m_fpsTimer = SDL_GetTicksNS();
         }
     }
 }
@@ -82,7 +116,7 @@ void Game::Run() {
 void Game::HandleEvent() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        // Quit event - exit game
+        // Quit event - Quit game
         if (event.type == SDL_EVENT_QUIT) {
             m_isRunning = false;
         }
@@ -105,7 +139,26 @@ void Game::Render() {
     // Render current scene
     m_currentScene->Render();
 
-    // Present to screen
+    // Render FPS if enabled
+    if (Settings::ShowFPS && m_fpsFont) {
+        int displayFPS = m_fps > 0 ? m_fps : m_frameCount;
+        char fpsText[32];
+        SDL_snprintf(fpsText, sizeof(fpsText), "FPS: %d", displayFPS);
+
+        SDL_Color white = {255, 255, 255, 255};
+        SDL_Surface* surf = TTF_RenderText_Blended(m_fpsFont, fpsText, SDL_strlen(fpsText), white);
+        if (surf) {
+            SDL_Texture* tex = SDL_CreateTextureFromSurface(m_renderer, surf);
+            if (tex) {
+                SDL_FRect dst = {10.0f, 10.0f, static_cast<float>(surf->w), static_cast<float>(surf->h)};
+                SDL_RenderTexture(m_renderer, tex, nullptr, &dst);
+                SDL_DestroyTexture(tex);
+            }
+            SDL_DestroySurface(surf);
+        }
+    }
+
+    // Present to screen (must be called only once, here in Game)
     SDL_RenderPresent(m_renderer);
 }
 

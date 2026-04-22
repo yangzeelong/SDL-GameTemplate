@@ -1,25 +1,21 @@
 #include "SceneDemo.hpp"
 #include "Game.hpp"
-#include "Config.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
-#include <cstdio>
 #include <algorithm>
+#include <cstdio>
 
 SceneDemo::SceneDemo()
-    : m_game(Game::GetInstance())
-    , m_font(nullptr)
-    , m_initialized(false)
-    , m_squareX(100.0f)
-    , m_squareY(100.0f)
-    , m_squareSpeed(200.0f)
-    , m_directionX(1)
-    , m_directionY(1) {
-}
+    : m_game(Game::GetInstance()),
+      m_font(nullptr),
+      m_initialized(false),
+      m_squareX(100.0f),
+      m_squareY(100.0f),
+      m_squareSpeed(200.0f),
+      m_directionX(1),
+      m_directionY(1) {}
 
-SceneDemo::~SceneDemo() {
-    DeInit();
-}
+SceneDemo::~SceneDemo() { DeInit(); }
 
 Error SceneDemo::Init() {
     // Initialize TTF font
@@ -31,7 +27,7 @@ Error SceneDemo::Init() {
     // Load font
     m_font = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 24);
     if (!m_font) {
-        m_font = TTF_OpenFont("D:/Library/SDL3/assets/font/VonwaonBitmap-16px.ttf", 24);
+        m_font = TTF_OpenFont("../assets/font/VonwaonBitmap-16px.ttf", 24);
     }
 
     m_initialized = true;
@@ -81,7 +77,7 @@ void SceneDemo::Render() {
 
     // Draw instructions
     if (m_font) {
-        const char* text = "SDL Game Template - Press ESC to exit";
+        const char* text = "SDL Game Template - Press ESC to Quit";
         SDL_Color white = {255, 255, 255, 255};
         SDL_Surface* surf = TTF_RenderText_Blended(m_font, text, SDL_strlen(text), white);
         if (surf) {
@@ -97,16 +93,13 @@ void SceneDemo::Render() {
             SDL_DestroySurface(surf);
         }
     }
-
-    // Present to screen
-    SDL_RenderPresent(renderer);
 }
 
 void SceneDemo::HandleEvent(SDL_Event& event) {
-    // ESC to exit
+    // ESC to Quit
     if (event.type == SDL_EVENT_KEY_DOWN) {
         if (event.key.key == SDLK_ESCAPE) {
-            m_game.Exit();
+            m_game.Quit();
         }
     }
 }

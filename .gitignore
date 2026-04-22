@@ -1,7 +1,6 @@
 # Build directories
 build/
-Debug/
-Release/
+install/
 
 # Visual Studio
 *.vcxproj
@@ -15,6 +14,9 @@ Release/
 *.exe
 *.dll
 *.pdb
+*.ilk
+*.lib
+*.exp
 
 # CMake
 CMakeCache.txt
@@ -22,7 +24,20 @@ CMakeFiles/
 cmake_install.cmake
 Makefile
 *.cmake
+compile_commands.json
+
+# IDE
+.vs/
+.vscode/
+
+# Misc
+*.log
+*.o
+*.obj
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Clang
+.cache

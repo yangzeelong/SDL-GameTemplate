@@ -6,7 +6,7 @@
 // ============================================
 enum Error {
     SUCCESS = 0,
-    ERROR = -1,
+    ERR = -1,
     ERROR_INIT = -2,
     ERROR_INVALID_PARAM = -3,
 };

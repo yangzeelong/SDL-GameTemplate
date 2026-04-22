@@ -6,7 +6,7 @@
 // All game scenes (Menu, Game, GameOver, etc.) inherit from this class
 // ============================================
 
-#include "Error.hpp"
+#include "Game/Error.hpp"
 #include <SDL3/SDL.h>
 
 class Scene {

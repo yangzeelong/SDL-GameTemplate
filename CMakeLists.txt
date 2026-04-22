@@ -25,12 +25,14 @@ message(STATUS "SDL3_LIBRARIES: ${SDL3_LIBRARIES}")
 # ============================================
 # Source Files
 # ============================================
-file(GLOB SRC_FILES "src/*.cpp" "src/Game/*.cpp")
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "src/*.cpp" "src/**/*.cpp")
 
 add_executable(SDL-GameTemplate ${SRC_FILES})
 
 # Include directories
 target_include_directories(SDL-GameTemplate PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/Base
     ${SDL3_INCLUDE_DIR}
     ${SDL3_INCLUDE_DIRS}
 )

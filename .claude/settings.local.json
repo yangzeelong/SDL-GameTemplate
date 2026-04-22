@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(where clang-format:*)",
+      "Bash(xargs clang-format:*)",
+      "Bash(git commit:*)",
+      "Bash(git rebase:*)",
+      "Bash(git stash:*)",
+      "Bash(git reset:*)",
+      "Bash(cmake --build build)",
+      "Bash(ls:*)",
+      "Bash(timeout 3 ./SDL-GameTemplate.exe)",
+      "Bash(gh run:*)"
+    ]
+  }
+}
